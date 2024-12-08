@@ -35,7 +35,7 @@ EOF
 
 cli() {
     while :; do
-        arg=${1:-}
+        local arg=${1:-}
 
         case "$arg" in
         -h | --help)
@@ -74,7 +74,7 @@ check_key() {
 }
 
 check_max_args() {
-    limit=$1
+    local limit=$1
     shift
 
     if [[ $# -gt $limit ]]; then
@@ -89,7 +89,7 @@ command_listen() {
 
     mkdir -p "$(dirname "$socket")"
 
-    restarts=0
+    local restarts=0
     while :; do
         if socat UNIX-LISTEN:"$socket",fork EXEC:"$0 pipe"; then
             restarts=0
@@ -101,7 +101,7 @@ command_listen() {
                 exit 1
             fi
 
-            delay=$((2 ** (restarts - 1)))
+            local delay=$((2 ** (restarts - 1)))
             sleep $((delay < MAX_DELAY ? delay : MAX_DELAY))
         fi
     done
