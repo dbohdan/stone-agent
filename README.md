@@ -30,7 +30,7 @@ $ STONE_AGENT_KEY=$(tail -n 1 test.key) ./stone-agent listen &
 [1] 713750
 $ ./stone-agent decrypt < hello.age
 Hello, world!
-$ nc -NU "$XDG_RUNTIME_DIR"/stone-agent < hello.age
+$ nc -NU "$XDG_RUNTIME_DIR"/stone-agent/socket < hello.age
 Hello, world!
 ```
 
