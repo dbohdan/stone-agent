@@ -11,7 +11,7 @@ test_dir=$(mktemp -d)
 cd "$test_dir"
 
 clean_up() {
-    pkill -P $$ || true
+    kill "$agent_pid" || :
     rm -f "$test_dir"/*
     rmdir "$test_dir"
 }
@@ -30,6 +30,7 @@ export STONE_AGENT_KEY
 STONE_AGENT_MAX_RESTARTS=3
 export STONE_AGENT_MAX_RESTARTS
 "$agent" listen ./socket &
+agent_pid=$!
 sleep 1
 
 if
