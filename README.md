@@ -16,6 +16,7 @@ It does not report errors to the socket user.
 ## Requirements
 
 - Bash (chosen over POSIX shell for the process substitution)
+- [pkill(1)](https://manpages.debian.org/bookworm/procps/pkill.1.en.html)
 - [socat(1)](https://manpages.debian.org/bookworm/socat/socat.1.en.html)
 
 ## Demo

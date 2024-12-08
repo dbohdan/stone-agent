@@ -136,6 +136,11 @@ if [[ $socket = $(basename "$socket") ]]; then
     socket=$socket_dir/$socket
 fi
 
+clean_up() {
+    pkill -P $$ || :
+}
+trap clean_up EXIT
+
 case "$cmd" in
 listen)
     command_listen "$@"
