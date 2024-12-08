@@ -18,7 +18,7 @@ Commands:
   decrypt
           Decrypt standard input to standard output by connecting to running agent
   pipe
-          Decrypt standard input to standard output with age. (Used internally by 'listen'.)
+          Decrypt standard input to standard output by running age. (Used internally by 'listen'.)
 
 Arguments:
   [unix-socket]

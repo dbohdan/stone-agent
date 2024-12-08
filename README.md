@@ -6,7 +6,7 @@ inspired by
 [ssh-agent](https://en.wikipedia.org/wiki/Ssh-agent)
 and
 [gpg-agent](https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html).
-It is a proof of concept meant for password managers based on age and shell.
+It is meant as a proof of concept for password managers based on age and shell.
 Bugs and security vulnerabilities are to be expected.
 
 The agent uses a private key given on launch to decrypt anything sent through a Unix domain socket.
@@ -47,8 +47,8 @@ Commands:
           Decrypt standard input to standard output by connecting to running
 agent
   pipe
-          Decrypt standard input to standard output with age. (Used internally
-by 'listen'.)
+          Decrypt standard input to standard output by running age. (Used
+internally by 'listen'.)
 
 Arguments:
   [unix-socket]
