@@ -12,7 +12,7 @@ cd "$test_dir"
 
 clean_up() {
     pkill -P $$ || true
-    rm "$test_dir"/*
+    rm -f "$test_dir"/*
     rmdir "$test_dir"
 }
 trap clean_up EXIT
