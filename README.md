@@ -44,9 +44,11 @@ Usage: STONE_AGENT_KEY=AGE-SECRET-KEY-1... stone-agent listen [unix-socket]
 Commands:
   listen
           Start agent
+
   decrypt
           Decrypt standard input to standard output by connecting to running
 agent
+
   pipe
           Decrypt standard input to standard output by running age. (Used
 internally by 'listen'.)
