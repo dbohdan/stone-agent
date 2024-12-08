@@ -1,0 +1,151 @@
+#! /usr/bin/env bash
+# stone-agent - a crude decryption agent for age.
+#
+# Copyright (c) 2024 D. Bohdan.
+# License: MIT.
+# See https://github.com/dbohdan/stone-agent for more information.
+set -euo pipefail
+
+help() {
+    cat <<EOF
+Usage: STONE_AGENT_KEY=AGE-SECRET-KEY-1... $(basename "$0") listen [unix-socket]
+       $(basename "$0") decrypt [unix-socket] < encrypted.age
+       STONE_AGENT_KEY=AGE-SECRET-KEY-1... $(basename "$0") pipe < encrypted.age
+
+Commands:
+  listen
+          Start agent
+  decrypt
+          Decrypt standard input to standard output by connecting to running agent
+  pipe
+          Decrypt standard input to standard output with age. (Used internally by 'listen'.)
+
+Arguments:
+  [unix-socket]
+          Unix domain socket to listen on or connect to. If the argument doesn't include a path, the directory for the socket is chosen automatically.
+
+Options:
+  -h, --help
+          Print this help message and exit
+
+  -V, --version
+          Print version number and exit
+EOF
+}
+
+cli() {
+    while :; do
+        arg=${1:-}
+
+        case "$arg" in
+        -h | --help)
+            help
+            exit 0
+            ;;
+        -V | --version)
+            echo "$VERSION"
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            echo 'unknown option:' "$1" >&2
+            exit 2
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $# -eq 0 ]]; then
+        echo 'need a command argument' >&2
+        exit 2
+    fi
+}
+
+check_key() {
+    if [[ -z $key ]]; then
+        echo "need 'STONE_AGENT_KEY' to be set" >&2
+        exit 2
+    fi
+}
+
+check_max_args() {
+    limit=$1
+    shift
+
+    if [[ $# -gt $limit ]]; then
+        echo 'too many arguments' >&2
+        exit 2
+    fi
+}
+
+command_listen() {
+    check_key
+    check_max_args 2 "$@"
+
+    mkdir -p "$(dirname "$socket")"
+
+    failed=0
+    while :; do
+        if socat UNIX-LISTEN:"$socket",fork EXEC:"$0 pipe"; then
+            failed=0
+        else
+            failed=$((failed + 1))
+
+            if [[ $failed -ge $MAX_RESTARTS ]]; then
+                echo 'too many attempts to start socat failed' 2>&1
+                exit 1
+            fi
+
+            sleep 1
+        fi
+    done
+}
+
+command_decrypt() {
+    check_max_args 2 "$@"
+
+    socat STDIO UNIX-CLIENT:"$socket"
+}
+
+command_pipe() {
+    check_key
+    check_max_args 1 "$@"
+
+    age -d -i <(echo "$key")
+}
+
+umask 077
+
+MAX_RESTARTS=5
+VERSION=0.1.0
+cli "$@"
+
+cmd=${1:-}
+key=${STONE_AGENT_KEY:-}
+socket=${2:-${STONE_AGENT_SOCK:-socket}}
+socket_dir=${XDG_RUNTIME_DIR:-${XDG_CACHE_HOME:-~/.cache}}/stone-agent
+
+if [[ $socket = $(basename "$socket") ]]; then
+    socket=$socket_dir/$socket
+fi
+
+case "$cmd" in
+listen)
+    command_listen "$@"
+    ;;
+decrypt)
+    command_decrypt "$@"
+    ;;
+pipe)
+    command_pipe "$@"
+    ;;
+*)
+    echo 'unknown command:' "$cmd" >&2
+    exit 2
+    ;;
+esac

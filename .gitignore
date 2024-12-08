@@ -1,0 +1,7 @@
+*.age
+*.key
+*.pub
+*.swp
+/attic/
+/help
+/socket

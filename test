@@ -1,0 +1,47 @@
+#! /usr/bin/env bash
+# Tests for stone-agent.
+#
+# Copyright (c) 2024 D. Bohdan.
+# License: MIT.
+# See https://github.com/dbohdan/stone-agent for more information.
+set -euo pipefail
+
+agent=$(dirname "$(realpath "$0")")/stone-agent
+test_dir=$(mktemp -d)
+cd "$test_dir"
+
+clean_up() {
+    pkill -P $$ || true
+    rm "$test_dir"/*
+    rmdir "$test_dir"
+}
+trap clean_up EXIT
+
+age-keygen -o test.key 2>/dev/null
+echo 'Hello, world!' | age -r "$(age-keygen -y test.key)" >hello.age
+
+if ! grep '^age-encryption.org' hello.age >/dev/null; then
+    echo "age signature not found in 'hello.age'" >&2
+    exit 1
+fi
+
+STONE_AGENT_KEY=$(tail -n 1 test.key)
+export STONE_AGENT_KEY
+"$agent" listen ./socket &
+sleep 1
+
+if
+    ! decrypted=$("$agent" decrypt ./socket <hello.age) \
+        || [[ $decrypted != 'Hello, world!' ]]
+then
+    echo 'decryption with socket argument failed' >&2
+    exit 1
+fi
+
+if
+    ! decrypted=$(STONE_AGENT_SOCK=./socket "$agent" decrypt <hello.age) \
+        || [[ $decrypted != 'Hello, world!' ]]
+then
+    echo "decryption with 'STONE_AGENT_SOCK' failed" >&2
+    exit 1
+fi
