@@ -89,19 +89,20 @@ command_listen() {
 
     mkdir -p "$(dirname "$socket")"
 
-    failed=0
+    restarts=0
     while :; do
         if socat UNIX-LISTEN:"$socket",fork EXEC:"$0 pipe"; then
-            failed=0
+            restarts=0
         else
-            failed=$((failed + 1))
+            restarts=$((restarts + 1))
 
-            if [[ $failed -ge $MAX_RESTARTS ]]; then
-                echo 'too many attempts to start socat failed' 2>&1
+            if [[ $MAX_RESTARTS -ge 0 && $restarts -ge $MAX_RESTARTS ]]; then
+                echo 'too many consecutive socat failures' 2>&1
                 exit 1
             fi
 
-            sleep 1
+            delay=$((2 ** (restarts - 1)))
+            sleep $((delay < MAX_DELAY ? delay : MAX_DELAY))
         fi
     done
 }
@@ -121,7 +122,8 @@ command_pipe() {
 
 umask 077
 
-MAX_RESTARTS=5
+MAX_DELAY=30
+MAX_RESTARTS=-1
 VERSION=0.1.0
 cli "$@"
 
