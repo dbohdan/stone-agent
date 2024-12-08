@@ -27,6 +27,8 @@ fi
 
 STONE_AGENT_KEY=$(tail -n 1 test.key)
 export STONE_AGENT_KEY
+STONE_AGENT_MAX_RESTARTS=3
+export STONE_AGENT_MAX_RESTARTS
 "$agent" listen ./socket &
 sleep 1
 
