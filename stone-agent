@@ -1,5 +1,5 @@
 #! /usr/bin/env bash
-# stone-agent - a crude decryption agent for age.
+# stone-agent - a crude agent for age.
 #
 # Copyright (c) 2024 D. Bohdan.
 # License: MIT.
